@@ -1,0 +1,37 @@
+---
+# Martin tile server configuration
+listen_addresses: "0.0.0.0:3000"
+
+postgres:
+  connection_string: ${DATABASE_URL}
+  # Pool settings
+  pool_size: 20
+
+  # Only expose the table we care about
+  tables:
+    road_links:
+      schema: public
+      table: road_links
+      srid: 4326
+      geometry_column: geom
+      geometry_type: LINESTRING
+      properties:
+        id: integer
+
+    residence_accessibility:
+      schema: public
+      table: residence_accessibility
+      srid: 4326
+      geometry_column: geom
+      geometry_type: POINT
+      # Properties embedded in the vector tiles
+      properties:
+        id: integer
+        address: text
+        stop_name: text
+        distance_m: number
+        color_class: text
+        road_connected: boolean
+
+# Tile cache settings
+cache_size_mb: 256

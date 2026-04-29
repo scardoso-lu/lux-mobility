@@ -1,0 +1,8 @@
+.env
+etl/data/
+etl/*.duckdb
+__pycache__/
+*.pyc
+*.parquet
+*.csv
+node_modules/

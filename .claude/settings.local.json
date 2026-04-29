@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:apiv4.geoportail.lu)",
+      "Bash(rtk ls *)",
+      "Bash(rtk pytest *)",
+      "Bash(rtk proxy *)",
+      "Bash(/usr/bin/python3 *)",
+      "Bash(rtk pip *)",
+      "Bash(/usr/bin/pip3 install *)",
+      "Bash(conda --version)",
+      "Bash(apt-get install *)",
+      "Bash(sudo apt-get *)",
+      "Bash(/usr/bin/python3.12 *)"
+    ]
+  }
+}

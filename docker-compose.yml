@@ -1,0 +1,99 @@
+services:
+
+  # ── PostgreSQL + PostGIS + pgRouting ─────────────────────────────────────
+  postgres:
+    build: ./db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_DB: ${PG_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── ETL init container (runs once, exits; other services wait for it) ───────
+  etl:
+    build: ./etl
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_HOST: postgres
+      PG_PORT: ${PG_PORT}
+      PG_DB: ${PG_DB}
+      PG_USER: ${PG_USER}
+      PG_PASS: ${PG_PASS}
+      FORCE_REPROCESS: ${FORCE_REPROCESS:-false}
+    volumes:
+      - ./etl:/app
+    working_dir: /app
+    command: ["bash", "/app/entrypoint.sh"]
+
+  # ── Martin vector tile server ─────────────────────────────────────────────
+  martin:
+    image: ghcr.io/maplibre/martin:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      etl:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: "postgresql://${PG_USER}:${PG_PASS}@postgres:${PG_PORT}/${PG_DB}"
+    volumes:
+      - ./martin/config.yaml:/config.yaml:ro
+    command: ["--config", "/config.yaml"]
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Address search + GeoJSON API ─────────────────────────────────────────
+  api:
+    build: ./api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      etl:
+        condition: service_completed_successfully
+    environment:
+      PG_HOST: postgres
+      PG_PORT: ${PG_PORT}
+      PG_DB: ${PG_DB}
+      PG_USER: ${PG_USER}
+      PG_PASS: ${PG_PASS}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_URL: ${API_URL}
+      TILE_URL: ${TILE_URL}
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:

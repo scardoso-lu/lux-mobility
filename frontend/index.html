@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luxembourg Transit Accessibility</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="sidebar">
+    <h1>Transit Accessibility</h1>
+    <p class="subtitle">Distance from every address to its nearest bus stop</p>
+
+    <div id="search-box">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search address…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div id="search-results" hidden></div>
+    </div>
+
+    <div id="legend">
+      <div class="legend-item"><span class="dot green"></span> &lt; 1 km — good access</div>
+      <div class="legend-item"><span class="dot yellow"></span> 1–2 km — moderate</div>
+      <div class="legend-item"><span class="dot red"></span> &gt; 2 km — poor access</div>
+    </div>
+
+    <div id="info-panel" hidden>
+      <button id="info-close" aria-label="Close">✕</button>
+      <div class="info-address" id="info-address"></div>
+      <div class="info-row">
+        <span class="info-label">Nearest stop</span>
+        <span class="info-value" id="info-stop"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Distance</span>
+        <span class="info-value" id="info-distance"></span>
+      </div>
+      <div class="info-row" id="info-road-row">
+        <span class="info-label">Road network</span>
+        <span class="info-value" id="info-road"></span>
+      </div>
+      <div class="info-badge" id="info-badge"></div>
+    </div>
+  </div>
+
+  <!-- Runtime env injected by nginx -->
+  <script src="/env.js"></script>
+  <!-- Luxembourg Geoportail API v4 (OpenLayers-based) -->
+  <script src="https://apiv4.geoportail.lu/apiv4loader.js" type="text/javascript"></script>
+  <script src="app.js"></script>
+</body>
+</html>
