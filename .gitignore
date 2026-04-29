@@ -1,6 +1,6 @@
 .env
 etl/data/
-etl/*.duckdb
+etl/*
 __pycache__/
 *.pyc
 *.parquet
